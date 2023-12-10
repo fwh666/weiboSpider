@@ -158,7 +158,7 @@ $ python3 -m weibo_spider --config_path="config.json"
 如果你想指定文件（csv、txt、json、图片、视频）保存路径，可以通过output_dir参数设定。假如你想把文件保存到/home/weibo/目录，可以运行如下命令：
 
 ```bash
-$ python3 -m weibo_spider --output_dir="/home/weibo/"
+$ python3 -m weibo_spider --output_dir="/Users/fwh/Downloads/"
 ```
 
 如果你想通过命令行输入user_id，可以使用参数u，可以输入一个或多个user_id，每个user_id以英文逗号分开，如果这些user_id中有重复的user_id，程序会自动去重。命令行如下：
