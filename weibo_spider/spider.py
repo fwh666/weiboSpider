@@ -13,7 +13,7 @@ from time import sleep
 
 from absl import app, flags
 from tqdm import tqdm
-
+from . import notion_util
 from . import config_util, datetime_util
 from .downloader import AvatarPictureDownloader
 from .parser import AlbumParser, IndexParser, PageParser, PhotoParser
