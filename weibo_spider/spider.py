@@ -224,6 +224,8 @@ class Spider:
     def _get_filepath(self, type):
         """获取结果文件路径"""
         try:
+            global global_file_path
+            global global_user_id
             dir_name = self.user.nickname
             if self.result_dir_name:
                 dir_name = self.user.id
@@ -238,6 +240,9 @@ class Spider:
             if type == 'img' or type == 'video':
                 return file_dir
             file_path = file_dir + os.sep + self.user.id + '.' + type
+            # 配置全局用于构参的变量
+            global_file_path=file_path
+            global_user_id=self.user.id
             return file_path
         except Exception as e:
             logger.exception(e)
@@ -347,6 +352,8 @@ class Spider:
                     random_users = random.randint(*self.random_wait_pages)
                 user_count += 1
                 self.get_one_user(user_config)
+                # fwh-保存数据到Notion中
+                notion_util.notion_main(global_user_id,global_file_path)
         except Exception as e:
             logger.exception(e)
 

@@ -1,6 +1,9 @@
 import json
 import os
 from notion_client import Client
+import logging
+
+logger = logging.getLogger('spider.notion_util')
 
 class Page:
     def __init__(self, id, user_id, content, article_url, original_pictures, original, video_url,publish_time, publish_place, publish_tool, up_num, retweet_num, comment_num, nickname, weibo_num, following, followers):
@@ -235,6 +238,8 @@ def get_ids_from_json(file_path):
     return ids
 
 def remove_elements(page_list, condition_id_set):
+    if len(condition_id_set) == 0:
+        return page_list
     to_remove = []  # 存储需要移除的 list2
     for item in page_list:
         if item.id in condition_id_set:
@@ -243,17 +248,21 @@ def remove_elements(page_list, condition_id_set):
         page_list.remove(item)  # 移除 list1 中的 list2
     return page_list
 
-def notion_main():
-    user_id = 5648162302
+def notion_main(user_id,source_file_path):
+    logger.info(f'{user_id} 开始Notion自动化处理数据...{source_file_path}')
+    # user_id = 5648162302
     #  /Users/fwh/Downloads/黄建同学/5648162302.json   数据源
-    file_path = f'/Users/fwh/Downloads/黄建同学/{user_id}.json'  # replace with your file's path
-    page_list=data_parse(file_path)
+    # source_file_path = f'/Users/fwh/Downloads/黄建同学/{user_id}.json'  # replace with your file's path
+    page_list=data_parse(source_file_path)
 
     # 对比文件中的数据
     # output_file_path = f'/Users/fwh/A_FWH/GitHub/weiboSpider/tests/fwh_test/{user_id}-reuslt.json'  # replace with your desired output file path
-    output_file_path = f'/Users/fwh/fuwenhao/Github/weiboSpider/tests/fwh_test/{user_id}-reuslt.json'  # replace with your desired output file path
-    ids=get_ids_from_json(output_file_path)
-
+    output_file_path = f'/Users/fwh/fuwenhao/Github/weiboSpider/tests/fwh_data/{user_id}-reuslt.json'  # replace with your desired output file path
+    if os.path.exists(output_file_path):
+        ids=get_ids_from_json(output_file_path)
+    else:
+        ids=set()
+    
     filter_result_list=remove_elements(page_list, ids)
     if len(filter_result_list) > 0:
         write_json_objects_to_file(filter_result_list, output_file_path)
@@ -262,7 +271,8 @@ def notion_main():
         for page in page_list:
             client.create_page(page)
     else:
-        print('没有数据可写入文件。')
+        logger.info(f'{user_id} 没有数据可写入文件。')
+        # print('没有数据可写入文件。')
     
 
 
