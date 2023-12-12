@@ -8,6 +8,12 @@
 3. 对比数据源中的id数据(唯一值),确认是否有新的数据,再存储Notion中
 
 ## 常用运行命令：
+
+- 首次终端运行,需要pip安装
+```bash
+$ python3 -m pip install weibo-spider
+```
+
 - 优先配置config.json文件
 
 - 默认选择config.json文件 输出指定文件夹
