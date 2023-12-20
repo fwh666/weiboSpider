@@ -1,0 +1,83 @@
+{
+    "user": {
+        "id": "1400854834",
+        "nickname": "ruanyf",
+        "gender": "男",
+        "location": "上海 浦东新区",
+        "birthday": "",
+        "description": "The trouble is you think you have time.",
+        "verified_reason": "互联网科技博主",
+        "talent": "",
+        "education": "",
+        "work": "",
+        "weibo_num": 4122,
+        "following": 317,
+        "followers": 193000
+    },
+    "weibo": [
+        {
+            "id": "NwjMBuJnV",
+            "user_id": "",
+            "content": "本周，美国两个 IT 巨头，各自发布了一个免费 AI 工具。- Imagine（图一）：Meta 公司的文生图工具，卖点是使用脸书和 IG 的11亿张图片进行训练。网页链接- NotebookLM（图二）：谷歌发布的 AI 笔记工具，自动生成上传文档的笔记，并可以对文档提问。网页链接试用体会：...全文 [组图共2张] 原图 ",
+            "article_url": "",
+            "original_pictures": "http://ww3.sinaimg.cn/large/537f5932gy1hkngl5dh9fj218g0ueqm6.jpg,http://ww4.sinaimg.cn/large/537f5932gy1hkngl8a2p2j20rs0jr0zw.jpg",
+            "retweet_pictures": null,
+            "original": true,
+            "video_url": "无",
+            "publish_place": "无",
+            "publish_time": "2023-12-09 13:13",
+            "publish_tool": "微博网页版",
+            "up_num": 190,
+            "retweet_num": 151,
+            "comment_num": 16
+        },
+        {
+            "id": "NvyluqGkI",
+            "user_id": "",
+            "content": "过去几年，我做了一个周刊，每周介绍一些不错的软件工具，累计已经超过2500个项目了。网友将它们都整理出来，做成一个搜索引擎，提供语义搜索。如果寻找软件工具，不妨用它试试。网页链接  原图 ",
+            "article_url": "",
+            "original_pictures": "https://wx3.sinaimg.cn/large/537f5932gy1hkhn5uf248j219u1581kx.jpg",
+            "retweet_pictures": null,
+            "original": true,
+            "video_url": "无",
+            "publish_place": "无",
+            "publish_time": "2023-12-04 12:27",
+            "publish_tool": "微博网页版",
+            "up_num": 515,
+            "retweet_num": 322,
+            "comment_num": 32
+        },
+        {
+            "id": "Nv5G3aLTT",
+            "user_id": "",
+            "content": "有没有人想过，在表格里面进行大数据计算？国内还真有一家公司，做了一个这样的工具“集算器”。底层是一个数据计算引擎，UI 居然是一个表格（图一）。网页链接它的单元格编号就是变量名，配备了超多的函数，有一套自己的语法。我看他们的教程，10行代码实现一个“古诗机器人”（图二...全文 [组图共2张] 原图 ",
+            "article_url": "",
+            "original_pictures": "http://ww2.sinaimg.cn/large/537f5932gy1hke4kvr7i5j20iv0bgq3j.jpg,http://ww4.sinaimg.cn/large/537f5932gy1hke4kxd1q6j20pw0jkacx.jpg",
+            "retweet_pictures": null,
+            "original": true,
+            "video_url": "无",
+            "publish_place": "无",
+            "publish_time": "2023-12-01 11:28",
+            "publish_tool": "微博网页版",
+            "up_num": 156,
+            "retweet_num": 195,
+            "comment_num": 13
+        },
+        {
+            "id": "Nv50GcYiF",
+            "user_id": "",
+            "content": "周五软件分享：- Biome（图一）：JS代码 Lint 和 格式化工具，Rust 写的，速度极快。网页链接- IP Guide（图二）：免费的 IP 地址位置 API。网页链接- Chrome 视频背景插件（图三）：空白标签页显示 macOS 的 4K 航拍屏保视频。...全文 [组图共4张] 原图 ",
+            "article_url": "",
+            "original_pictures": "http://ww3.sinaimg.cn/large/537f5932gy1hke1nethtmj20m80aq41d.jpg,http://ww2.sinaimg.cn/large/537f5932gy1hke1nev8bpj20jg09g0w1.jpg,http://ww4.sinaimg.cn/large/537f5932gy1hke1nexk4vj20jg0b7gtd.jpg,http://ww3.sinaimg.cn/large/537f5932gy1hke1nev8s7j20m80bdq6d.jpg",
+            "retweet_pictures": null,
+            "original": true,
+            "video_url": "无",
+            "publish_place": "无",
+            "publish_time": "2023-12-01 09:46",
+            "publish_tool": "微博网页版",
+            "up_num": 52,
+            "retweet_num": 30,
+            "comment_num": 3
+        }
+    ]
+}
