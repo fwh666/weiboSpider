@@ -353,7 +353,7 @@ class Spider:
                 user_count += 1
                 self.get_one_user(user_config)
                 # fwh-保存数据到Notion中
-                notion_util.notion_main(global_user_id,global_file_path)
+                # notion_util.notion_main(global_user_id,global_file_path)
         except Exception as e:
             logger.exception(e)
 
@@ -388,6 +388,7 @@ def main(_):
         config_util.validate_config(config)
         wb = Spider(config)
         wb.start()  # 爬取微博信息
+        notion_util.main() #存储Notion
     except Exception as e:
         logger.exception(e)
 
