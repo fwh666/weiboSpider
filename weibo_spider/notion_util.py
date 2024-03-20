@@ -32,7 +32,7 @@ def data_parse(file_path):
         data = json.load(f)
 
     page_list=[]
-    
+
     # Get the user's ID and nickname
     user_id = data['user']['id']
     nickname = data['user']['nickname']
@@ -59,10 +59,10 @@ def data_parse(file_path):
         page_list.append(page)
     print(page_list)
     return page_list
-    
 
 
-    
+
+
 from notion_client import Client
 class notion_client:
     def __init__(self):
@@ -227,7 +227,7 @@ def load_json_objects_from_file(filename):
             objects.append(obj)
     return objects
 
-def get_ids_from_json(file_path):    
+def get_ids_from_json(file_path):
     ids = set()
     if os.path.exists(file_path):
         with open(file_path, 'r') as json_file:
@@ -263,7 +263,7 @@ def notion_main(user_id,source_file_path):
         ids=get_ids_from_json(output_file_path)
     else:
         ids=set()
-    
+
     filter_result_list=remove_elements(page_list, ids)
     if len(filter_result_list) > 0:
         write_json_objects_to_file(filter_result_list, output_file_path)
@@ -274,7 +274,69 @@ def notion_main(user_id,source_file_path):
     else:
         logger.info(f'{user_id} 没有数据可写入文件。')
         # print('没有数据可写入文件。')
-    
+
+
+def get_message_ids(result_path):
+    set_message_ids = set()
+    # 判断文件是否存在
+    # result_path = os.path.join(os.path.dirname(__file__), "data", f'twitter-noiton.json')
+    if not os.path.exists(result_path):
+        print(f'[文件不存在:{result_path}')
+        return set_message_ids
+    # 读取json文件
+    try:
+        with open(result_path, 'r') as file:
+            for line in file:
+                if len(line) > 0:
+                    obj = json.loads(line)
+                    set_message_ids.add(obj['id'])
+    except Exception as e:
+        logger.error("NotionClient get_message_ids Error", e)
+    print(f'[已记录nodeId数量:{len(set_message_ids)}]')
+    return set_message_ids
+def get_json_file(folder_path):
+    import os
+    # 指定文件夹路径
+    # folder_path = '/path/to/your/folder'
+    # 存储所有JSON文件的路径
+    json_files = []
+    # 使用os.walk()遍历文件夹中的所有子文件夹和文件
+    for root, dirs, files in os.walk(folder_path):
+        for file in files:
+            if file.endswith('.json'):
+                json_files.append(os.path.join(root, file))
+    # 打印所有JSON文件的路径
+    # for json_file in json_files:
+    #     print(json_file)
+    return json_files
+'''
+1. 获取已经保存notionID数据
+2. for循环处理新存储的数据文件
+3. 只保存没有的数据到Notion
+4. 核心校验数据值为消息ID
+'''
+def main():
+    notion_file_path = f'/Users/fwh/fuwenhao/Github/weiboSpider/weibo/weibo-notion.json'
+    exist_ids=get_message_ids(notion_file_path)
+    # data_file_path = f'/Users/fwh/A_FWH/GitHub/weiboSpider/weibo/'
+    data_file_path = '/Users/fwh/fuwenhao/Github/weiboSpider/weibo'
+    #加载所有json文件
+    json_files=get_json_file(data_file_path)
+    for json_file in json_files:
+        if json_file.endswith('weibo-notion.json'):
+            continue
+        page_list = data_parse(json_file)
+        # client = notion_client()
+        for page in page_list:
+            if page.id not in exist_ids:
+                print('insert')
+                #todo-fwh
+                # client.create_page(page)
+            else:
+                continue
+
+
+
 
 
 """
@@ -283,4 +345,5 @@ def notion_main(user_id,source_file_path):
 3. 比较新增的数据，有就保存Notion，无就跳过
 """
 if __name__ == '__main__':
-    notion_main()
+    # notion_main()
+    main()
