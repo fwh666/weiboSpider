@@ -13,11 +13,16 @@ from time import sleep
 
 from absl import app, flags
 from tqdm import tqdm
-from . import notion_util
-from . import config_util, datetime_util
-from .downloader import AvatarPictureDownloader
-from .parser import AlbumParser, IndexParser, PageParser, PhotoParser
-from .user import User
+# from . import notion_util
+# from . import config_util, datetime_util
+# from .downloader import AvatarPictureDownloader
+# from .parser import AlbumParser, IndexParser, PageParser, PhotoParser
+# from .user import User
+import notion_util
+import config_util,datetime_util
+from downloader import AvatarPictureDownloader
+from parser import AlbumParser, IndexParser, PageParser, PhotoParser
+from user import User
 
 FLAGS = flags.FLAGS
 
@@ -268,7 +273,8 @@ class Spider:
             self.writers.append(
                 TxtWriter(self._get_filepath('txt'), self.filter))
         if 'json' in self.write_mode:
-            from .writer import JsonWriter
+            # from .writer import JsonWriter
+            from writer import JsonWriter
 
             self.writers.append(JsonWriter(self._get_filepath('json')))
         if 'mysql' in self.write_mode:
@@ -353,7 +359,7 @@ class Spider:
                 user_count += 1
                 self.get_one_user(user_config)
                 # fwh-保存数据到Notion中
-                notion_util.notion_main(global_user_id,global_file_path)
+                # notion_util.notion_main(global_user_id,global_file_path)
         except Exception as e:
             logger.exception(e)
 
