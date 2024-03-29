@@ -325,32 +325,32 @@ def remove_elements(page_list, condition_id_set):
     return page_list
 
 
-def notion_main(user_id, source_file_path):
-    logger.info(f'{user_id} 开始Notion自动化处理数据...{source_file_path}')
-    # user_id = 5648162302
-    #  /Users/fwh/Downloads/黄建同学/5648162302.json   数据源
-    # source_file_path = f'/Users/fwh/Downloads/黄建同学/{user_id}.json'  # replace with your file's path
-    page_list = data_parse(source_file_path)
-
-    # 对比文件中的数据
-    # output_file_path = f'/Users/fwh/A_FWH/GitHub/weiboSpider/tests/fwh_test/{user_id}-reuslt.json'  # replace with your desired output file path
-    # output_file_path = f'/Users/fwh/fuwenhao/Github/weiboSpider/tests/fwh_data/{user_id}-reuslt.json'  # replace with your desired output file path
-    output_file_path = f'/home/fwh/github/weiboSpider/tests/fwh_data/{user_id}-reuslt.json'  # replace with your desired output file path
-    if os.path.exists(output_file_path):
-        ids = get_ids_from_json(output_file_path)
-    else:
-        ids = set()
-
-    filter_result_list = remove_elements(page_list, ids)
-    if len(filter_result_list) > 0:
-        write_json_objects_to_file(filter_result_list, output_file_path)
-        # Create a Notion page for each weibo
-        client = notion_client()
-        for page in page_list:
-            client.create_page(page)
-    else:
-        logger.info(f'{user_id} 没有数据可写入文件。')
-        # print('没有数据可写入文件。')
+# def notion_main(user_id, source_file_path):
+#     logger.info(f'{user_id} 开始Notion自动化处理数据...{source_file_path}')
+#     # user_id = 5648162302
+#     #  /Users/fwh/Downloads/黄建同学/5648162302.json   数据源
+#     # source_file_path = f'/Users/fwh/Downloads/黄建同学/{user_id}.json'  # replace with your file's path
+#     page_list = data_parse(source_file_path)
+#
+#     # 对比文件中的数据
+#     # output_file_path = f'/Users/fwh/A_FWH/GitHub/weiboSpider/tests/fwh_test/{user_id}-reuslt.json'  # replace with your desired output file path
+#     # output_file_path = f'/Users/fwh/fuwenhao/Github/weiboSpider/tests/fwh_data/{user_id}-reuslt.json'  # replace with your desired output file path
+#     output_file_path = f'/home/fwh/github/weiboSpider/tests/fwh_data/{user_id}-reuslt.json'  # replace with your desired output file path
+#     if os.path.exists(output_file_path):
+#         ids = get_ids_from_json(output_file_path)
+#     else:
+#         ids = set()
+#
+#     filter_result_list = remove_elements(page_list, ids)
+#     if len(filter_result_list) > 0:
+#         write_json_objects_to_file(filter_result_list, output_file_path)
+#         # Create a Notion page for each weibo
+#         client = notion_client()
+#         for page in page_list:
+#             client.create_page(page)
+#     else:
+#         logger.info(f'{user_id} 没有数据可写入文件。')
+#         # print('没有数据可写入文件。')
 
 
 def get_message_ids(result_path):
