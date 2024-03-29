@@ -232,7 +232,14 @@ class notion_client:
                             }
                         }
                     ]
-                }
+                },
+                "Tags": {
+                    "multi_select": [
+                        {
+                            "name": '初始化'
+                        }
+                    ]
+                },
             }
         )
         return new_page
