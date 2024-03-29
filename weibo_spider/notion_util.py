@@ -1,12 +1,18 @@
 import json
 import os
-from notion_client import Client
 import logging
+import requests
+from lxml import etree
+import random
+from time import sleep
 
 logger = logging.getLogger('spider.notion_util')
 
+
 class Page:
-    def __init__(self, id, user_id, content, article_url, original_pictures, original, video_url,publish_time, publish_place, publish_tool, up_num, retweet_num, comment_num, nickname, weibo_num, following, followers):
+    def __init__(self, id, user_id, content, article_url, original_pictures, original, video_url, publish_time,
+                 publish_place, publish_tool, up_num, retweet_num, comment_num, nickname, weibo_num, following,
+                 followers):
         self.id = id
         self.user_id = user_id
         self.content = content
@@ -26,13 +32,13 @@ class Page:
         self.followers = followers
 
 
-def data_parse(file_path):
+def data_parse(file_path, exist_ids):
     # Load the JSON file
-    with open(file_path,'r') as f:
+    with open(file_path, 'r') as f:
         data = json.load(f)
 
-    page_list=[]
-    
+    page_list = []
+
     # Get the user's ID and nickname
     user_id = data['user']['id']
     nickname = data['user']['nickname']
@@ -43,27 +49,71 @@ def data_parse(file_path):
     # Get the weibo field attributes
     for weibo in data['weibo']:
         id = weibo['id']
+        if id in exist_ids:
+            continue
         content = weibo['content']
+        if u'全文' in content:
+            cookie = 'SCF=AmdJA8eVf6WN0I0DpGYvCRJhTxQLYMoMaSoqxI5y_dhdYNYnsv521TbCSGVklmKQfBHpBzBDxo9WAqPUso_FtrA.; SUB=_2A25LAQg7DeRhGeRP7FUQ9ifKyjyIHXVofwXzrDV6PUJbktCOLXH1kW1NUBLdA4EpiFs7REXSLbH3KVC5E3THMYqW; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WF052.szp5Ep4SBfMjNg4y55JpX5KMhUgL.FozpS0MpSo.ceK52dJLoIpnLxKqL1KqL1hMLxKqLBo-LBKLSqPicIgRt; SSOLoginState=1711634539; ALF=1714226539; WEIBOCN_FROM=1110006030; _T_WM=47410922088; MLOGIN=1; XSRF-TOKEN=1d7c2f; M_WEIBOCN_PARAMS=oid%3D5017037674382501%26luicode%3D20000174%26lfid%3D5017037674382501%26uicode%3D20000174'
+            content = get_long_content(cookie, id, content)
         article_url = weibo['article_url']
         original_pictures = weibo['original_pictures']
         original = weibo['original']
         video_url = weibo['video_url']
-        publish_time=weibo['publish_time']
+        publish_time = weibo['publish_time']
         publish_place = weibo['publish_place']
         publish_tool = weibo['publish_tool']
         up_num = weibo['up_num']
         retweet_num = weibo['retweet_num']
         comment_num = weibo['comment_num']
         # Create an instance of the Page class
-        page = Page(id, user_id, content, article_url, original_pictures, original, video_url,publish_time, publish_place, publish_tool, up_num, retweet_num, comment_num, nickname, weibo_num, following, followers)
+        page = Page(id, user_id, content, article_url, original_pictures, original, video_url, publish_time,
+                    publish_place, publish_tool, up_num, retweet_num, comment_num, nickname, weibo_num, following,
+                    followers)
         page_list.append(page)
     print(page_list)
     return page_list
-    
 
 
-    
+def get_long_content(cookie, weibo_id, content):
+    try:
+        url = f'https://weibo.cn/comment/{weibo_id}'
+        user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36'
+        headers = {'User_Agent': user_agent, 'Cookie': cookie}
+        resp = requests.get(url, headers=headers)
+        selector = etree.HTML(resp.content)
+        if selector is not None:
+            info = selector.xpath("//div[@class='c']")[1]
+            wb_content = handle_garbled(info)
+            wb_time = info.xpath("//span[@class='ct']/text()")[0]
+            weibo_content = wb_content[wb_content.find(':') +
+                                       1:wb_content.rfind(wb_time)]
+            sleep(random.randint(6, 10))
+            if weibo_content is not None:
+                return weibo_content
+            else:
+                return content
+    except Exception as e:
+        print('获取正文异常', e)
+        return content
+
+
+import sys
+
+
+def handle_garbled(info):
+    """处理乱码"""
+    try:
+        info = (info.xpath('string(.)').replace(u'\u200b', '').encode(
+            sys.stdout.encoding, 'ignore').decode(sys.stdout.encoding))
+        return info
+    except Exception as e:
+        logger.exception(e)
+        return u'无'
+
+
 from notion_client import Client
+
+
 class notion_client:
     def __init__(self):
         """
@@ -73,15 +123,17 @@ class notion_client:
         global global_notion
         global global_database_id
         global_token = "secret_SGSgYlUHk8knQRLcwJr1alzjzVTwXFwrr0UDBawy0Sw"
-        global_database_id = "bc6dd8a4495f483989fac402ec1486fa"
+        global_database_id = "bc6dd8a4495f483989fac402ec1486fa"  # 微博-data
         global_notion = Client(auth=global_token)
         global_query_results = global_notion.databases.query(database_id=global_database_id)
-        print('开始Notion自动化获取数据...')
+        print('初始化Notion...')
+
     """
     创建新的页面
     1. 属性名字和字段个数要对应上
     2. 不同的属性用不同的构参方式
     """
+
     def create_page(self, page):
         new_page = global_notion.pages.create(
             parent={
@@ -142,15 +194,15 @@ class notion_client:
                     }
                 },
                 "正文地址URL": {
-                    'url': 'https://m.weibo.cn/detail/'+str(page.id)
+                    'url': 'https://m.weibo.cn/detail/' + str(page.id)
                 },
                 '超话社区': {
-                    'select':{
+                    'select': {
                         'name': page.publish_tool
                     }
                 },
                 '是否原创': {
-                    'select':{
+                    'select': {
                         'name': str(page.original)
                     }
                 },
@@ -180,7 +232,14 @@ class notion_client:
                             }
                         }
                     ]
-                }
+                },
+                "Tags": {
+                    "multi_select": [
+                        {
+                            "name": '初始化'
+                        }
+                    ]
+                },
             }
         )
         return new_page
@@ -226,7 +285,8 @@ def load_json_objects_from_file(filename):
             objects.append(obj)
     return objects
 
-def get_ids_from_json(file_path):    
+
+def get_ids_from_json(file_path):
     ids = set()
     if os.path.exists(file_path):
         with open(file_path, 'r') as json_file:
@@ -235,6 +295,7 @@ def get_ids_from_json(file_path):
                 if 'id' in obj:
                     ids.add(obj['id'])
     return ids
+
 
 def remove_elements(page_list, condition_id_set):
     if len(condition_id_set) == 0:
@@ -247,27 +308,28 @@ def remove_elements(page_list, condition_id_set):
         page_list.remove(item)  # 移除 list1 中的 list2
     return page_list
 
-def notion_main(user_id,source_file_path):
+
+def notion_main(user_id, source_file_path):
     logger.info(f'{user_id} 开始Notion自动化处理数据...{source_file_path}')
     # user_id = 5648162302
     #  /Users/fwh/Downloads/黄建同学/5648162302.json   数据源
     # source_file_path = f'/Users/fwh/Downloads/黄建同学/{user_id}.json'  # replace with your file's path
-    page_list=data_parse(source_file_path)
+    page_list = data_parse(source_file_path)
 
     # 对比文件中的数据
     # output_file_path = f'/Users/fwh/A_FWH/GitHub/weiboSpider/tests/fwh_test/{user_id}-reuslt.json'  # replace with your desired output file path
     # output_file_path = f'/Users/fwh/fuwenhao/Github/weiboSpider/tests/fwh_data/{user_id}-reuslt.json'  # replace with your desired output file path
     output_file_path = f'/home/fwh/github/weiboSpider/tests/fwh_data/{user_id}-reuslt.json'  # replace with your desired output file path
     if os.path.exists(output_file_path):
-        ids=get_ids_from_json(output_file_path)
+        ids = get_ids_from_json(output_file_path)
     else:
-        ids=set()
-    
-    filter_result_list=remove_elements(page_list, ids)
+        ids = set()
+
+    filter_result_list = remove_elements(page_list, ids)
     if len(filter_result_list) > 0:
         write_json_objects_to_file(filter_result_list, output_file_path)
         # Create a Notion page for each weibo
-        client=notion_client()
+        client = notion_client()
         for page in page_list:
             client.create_page(page)
     else:
@@ -331,7 +393,7 @@ def main():
     for json_file in json_files:
         if json_file.endswith('weibo-notion.json'):
             continue
-        page_list = data_parse(json_file)
+        page_list = data_parse(json_file, exist_ids)
         for page in page_list:
             id = page.id
             if id not in exist_ids:

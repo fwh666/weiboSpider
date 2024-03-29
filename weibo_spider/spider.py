@@ -13,11 +13,16 @@ from time import sleep
 
 from absl import app, flags
 from tqdm import tqdm
-from . import notion_util
-from . import config_util, datetime_util
-from .downloader import AvatarPictureDownloader
-from .parser import AlbumParser, IndexParser, PageParser, PhotoParser
-from .user import User
+# from . import notion_util
+# from . import config_util, datetime_util
+# from .downloader import AvatarPictureDownloader
+# from .parser import AlbumParser, IndexParser, PageParser, PhotoParser
+# from .user import User
+import notion_util
+import config_util,datetime_util
+from downloader import AvatarPictureDownloader
+from parser import AlbumParser, IndexParser, PageParser, PhotoParser
+from user import User
 
 FLAGS = flags.FLAGS
 
@@ -258,21 +263,25 @@ class Spider:
             self.new_since_date = self.end_date
         self.writers = []
         if 'csv' in self.write_mode:
-            from .writer import CsvWriter
+            # from .writer import CsvWriter
+            from writer import CsvWriter
 
             self.writers.append(
                 CsvWriter(self._get_filepath('csv'), self.filter))
         if 'txt' in self.write_mode:
-            from .writer import TxtWriter
+            # from .writer import TxtWriter
+            from writer import TxtWriter
 
             self.writers.append(
                 TxtWriter(self._get_filepath('txt'), self.filter))
         if 'json' in self.write_mode:
-            from .writer import JsonWriter
+            # from .writer import JsonWriter
+            from writer import JsonWriter
 
             self.writers.append(JsonWriter(self._get_filepath('json')))
         if 'mysql' in self.write_mode:
-            from .writer import MySqlWriter
+            # from .writer import MySqlWriter
+            from writer import MySqlWriter
 
             self.writers.append(MySqlWriter(self.mysql_config))
         if 'mongo' in self.write_mode:
@@ -291,7 +300,9 @@ class Spider:
 
         self.downloaders = []
         if self.pic_download == 1:
-            from .downloader import (OriginPictureDownloader,
+            # from .downloader import (OriginPictureDownloader,
+            #                          RetweetPictureDownloader)
+            from downloader import (OriginPictureDownloader,
                                      RetweetPictureDownloader)
 
             self.downloaders.append(
@@ -302,8 +313,8 @@ class Spider:
                 RetweetPictureDownloader(self._get_filepath('img'),
                                          self.file_download_timeout))
         if self.video_download == 1:
-            from .downloader import VideoDownloader
-
+            # from .downloader import VideoDownloader
+            from downloader import VideoDownloader
             self.downloaders.append(
                 VideoDownloader(self._get_filepath('video'),
                                 self.file_download_timeout))
@@ -388,7 +399,7 @@ def main(_):
         config_util.validate_config(config)
         wb = Spider(config)
         wb.start()  # 爬取微博信息
-        notion_util.main() #存储Notion
+        notion_util.main()
     except Exception as e:
         logger.exception(e)
 

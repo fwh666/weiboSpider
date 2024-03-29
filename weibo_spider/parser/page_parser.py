@@ -3,8 +3,10 @@ import re
 import sys
 from datetime import datetime, timedelta
 
-from .. import datetime_util
-from ..weibo import Weibo
+# from .. import datetime_util
+# from ..weibo import Weibo
+import datetime_util
+from weibo import Weibo
 from .comment_parser import CommentParser
 from .mblog_picAll_parser import MblogPicAllParser
 from .parser import Parser

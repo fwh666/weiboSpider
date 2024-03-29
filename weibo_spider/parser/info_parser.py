@@ -1,7 +1,11 @@
 import logging
 import sys
 
-from ..user import User
+# from ..user import User
+# from .parser import Parser
+# from .util import handle_html
+
+from user import User
 from .parser import Parser
 from .util import handle_html
 
