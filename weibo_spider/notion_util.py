@@ -53,7 +53,7 @@ def data_parse(file_path, exist_ids):
             continue
         content = weibo['content']
         if u'全文' in content:
-            cookie = global_cookie
+            cookie = 'SCF=AmdJA8eVf6WN0I0DpGYvCRJhTxQLYMoMaSoqxI5y_dhdYNYnsv521TbCSGVklmKQfBHpBzBDxo9WAqPUso_FtrA.; SUB=_2A25LAQg7DeRhGeRP7FUQ9ifKyjyIHXVofwXzrDV6PUJbktCOLXH1kW1NUBLdA4EpiFs7REXSLbH3KVC5E3THMYqW; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WF052.szp5Ep4SBfMjNg4y55JpX5KMhUgL.FozpS0MpSo.ceK52dJLoIpnLxKqL1KqL1hMLxKqLBo-LBKLSqPicIgRt; ALF=1714226539; _T_WM=94535001455; WEIBOCN_FROM=1110106030; MLOGIN=1; XSRF-TOKEN=688eac; mweibo_short_token=e831d00f2f; M_WEIBOCN_PARAMS=luicode%3D10000011%26lfid%3D231583%26fid%3D1005052217035934%26uicode%3D10000011'
             content = get_long_content(cookie, id, content)
             if len(content) < 10:
                 content = weibo['content']
@@ -73,7 +73,6 @@ def data_parse(file_path, exist_ids):
                     publish_place, publish_tool, up_num, retweet_num, comment_num, nickname, weibo_num, following,
                     followers)
         page_list.append(page)
-    print(page_list)
     return page_list
 
 
@@ -87,6 +86,9 @@ def get_long_content(cookie, weibo_id, content):
         if selector is not None:
             info = selector.xpath("//div[@class='c']")[1]
             wb_content = handle_garbled(info)
+            if len(wb_content) == 0:
+                info = selector.xpath("//div[@id='M_']")[0]
+                wb_content = handle_garbled(info)
             wb_time = info.xpath("//span[@class='ct']/text()")[0]
             weibo_content = wb_content[wb_content.find(':') +
                                        1:wb_content.rfind(wb_time)]
@@ -290,7 +292,6 @@ def write_json_objects_to_file(objects, filename):
                 'following': obj.following,
                 'followers': obj.followers
             }
-            # Write the JSON object to filefile)
             json.dump(page_dict, file)
             file.write('\n')  # 添加分隔符，例如换行符
     print('JSON文件保存成功。')
@@ -326,34 +327,6 @@ def remove_elements(page_list, condition_id_set):
     for item in to_remove:
         page_list.remove(item)  # 移除 list1 中的 list2
     return page_list
-
-
-# def notion_main(user_id, source_file_path):
-#     logger.info(f'{user_id} 开始Notion自动化处理数据...{source_file_path}')
-#     # user_id = 5648162302
-#     #  /Users/fwh/Downloads/黄建同学/5648162302.json   数据源
-#     # source_file_path = f'/Users/fwh/Downloads/黄建同学/{user_id}.json'  # replace with your file's path
-#     page_list = data_parse(source_file_path)
-#
-#     # 对比文件中的数据
-#     # output_file_path = f'/Users/fwh/A_FWH/GitHub/weiboSpider/tests/fwh_test/{user_id}-reuslt.json'  # replace with your desired output file path
-#     # output_file_path = f'/Users/fwh/fuwenhao/Github/weiboSpider/tests/fwh_data/{user_id}-reuslt.json'  # replace with your desired output file path
-#     output_file_path = f'/home/fwh/github/weiboSpider/tests/fwh_data/{user_id}-reuslt.json'  # replace with your desired output file path
-#     if os.path.exists(output_file_path):
-#         ids = get_ids_from_json(output_file_path)
-#     else:
-#         ids = set()
-#
-#     filter_result_list = remove_elements(page_list, ids)
-#     if len(filter_result_list) > 0:
-#         write_json_objects_to_file(filter_result_list, output_file_path)
-#         # Create a Notion page for each weibo
-#         client = notion_client()
-#         for page in page_list:
-#             client.create_page(page)
-#     else:
-#         logger.info(f'{user_id} 没有数据可写入文件。')
-#         # print('没有数据可写入文件。')
 
 
 def get_message_ids(result_path):
@@ -412,7 +385,11 @@ def main():
     for json_file in json_files:
         if json_file.endswith('weibo-notion.json'):
             continue
+        print(f'[处理文件:{json_file}]')
         page_list = data_parse(json_file, exist_ids)
+        if len(page_list) == 0:
+            print(f'[文件:{json_file}没有新增数据]')
+            continue
         for page in page_list:
             id = page.id
             if id not in exist_ids:
@@ -424,13 +401,13 @@ def main():
                 print(f'保存消息ID为:{id}')
                 insert_notion_data = {'id': id, 'page_id': page_id}
                 insert_notion_list.append(insert_notion_data)
-
-    with open(notion_file_path, 'a') as f:
-        for i in insert_notion_list:
-            json.dump(i, f)
-            f.write('\n')
-        f.close()
-        print(f'[notion.json保存:{len(insert_notion_list)}条数据完成]')
+    if len(insert_notion_list) > 0:
+        with open(notion_file_path, 'a') as f:
+            for i in insert_notion_list:
+                json.dump(i, f)
+                f.write('\n')
+            f.close()
+            print(f'[notion.json保存:{len(insert_notion_list)}条数据完成]')
 
 
 """
@@ -442,8 +419,5 @@ from notion_clean_weibo import main as clean_main
 
 global global_cookie
 if __name__ == '__main__':
-    global_cookie = 'SCF=AmdJA8eVf6WN0I0DpGYvCRJhTxQLYMoMaSoqxI5y_dhdYNYnsv521TbCSGVklmKQfBHpBzBDxo9WAqPUso_FtrA.; SUB=_2A25LAQg7DeRhGeRP7FUQ9ifKyjyIHXVofwXzrDV6PUJbktCOLXH1kW1NUBLdA4EpiFs7REXSLbH3KVC5E3THMYqW; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WF052.szp5Ep4SBfMjNg4y55JpX5KMhUgL.FozpS0MpSo.ceK52dJLoIpnLxKqL1KqL1hMLxKqLBo-LBKLSqPicIgRt; ALF=1714226539; _T_WM=94535001455; WEIBOCN_FROM=1110106030; MLOGIN=1; XSRF-TOKEN=688eac; mweibo_short_token=e831d00f2f; M_WEIBOCN_PARAMS=luicode%3D10000011%26lfid%3D231583%26fid%3D1005052217035934%26uicode%3D10000011'
-    if len(global_cookie) < 10:
-        exit()
     main()
     clean_main()
