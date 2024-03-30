@@ -53,7 +53,7 @@ def data_parse(file_path, exist_ids):
             continue
         content = weibo['content']
         if u'全文' in content:
-            cookie = global_cookie
+            cookie = 'SCF=AmdJA8eVf6WN0I0DpGYvCRJhTxQLYMoMaSoqxI5y_dhdYNYnsv521TbCSGVklmKQfBHpBzBDxo9WAqPUso_FtrA.; SUB=_2A25LAQg7DeRhGeRP7FUQ9ifKyjyIHXVofwXzrDV6PUJbktCOLXH1kW1NUBLdA4EpiFs7REXSLbH3KVC5E3THMYqW; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WF052.szp5Ep4SBfMjNg4y55JpX5KMhUgL.FozpS0MpSo.ceK52dJLoIpnLxKqL1KqL1hMLxKqLBo-LBKLSqPicIgRt; SSOLoginState=1711634539; ALF=1714226539; WEIBOCN_FROM=1110006030; _T_WM=47410922088; MLOGIN=1; XSRF-TOKEN=1d7c2f; M_WEIBOCN_PARAMS=oid%3D5017037674382501%26luicode%3D20000174%26lfid%3D5017037674382501%26uicode%3D20000174'
             content = get_long_content(cookie, id, content)
             if len(content) < 10:
                 content = weibo['content']
@@ -327,33 +327,6 @@ def remove_elements(page_list, condition_id_set):
     return page_list
 
 
-# def notion_main(user_id, source_file_path):
-#     logger.info(f'{user_id} 开始Notion自动化处理数据...{source_file_path}')
-#     # user_id = 5648162302
-#     #  /Users/fwh/Downloads/黄建同学/5648162302.json   数据源
-#     # source_file_path = f'/Users/fwh/Downloads/黄建同学/{user_id}.json'  # replace with your file's path
-#     page_list = data_parse(source_file_path)
-#
-#     # 对比文件中的数据
-#     # output_file_path = f'/Users/fwh/A_FWH/GitHub/weiboSpider/tests/fwh_test/{user_id}-reuslt.json'  # replace with your desired output file path
-#     # output_file_path = f'/Users/fwh/fuwenhao/Github/weiboSpider/tests/fwh_data/{user_id}-reuslt.json'  # replace with your desired output file path
-#     output_file_path = f'/home/fwh/github/weiboSpider/tests/fwh_data/{user_id}-reuslt.json'  # replace with your desired output file path
-#     if os.path.exists(output_file_path):
-#         ids = get_ids_from_json(output_file_path)
-#     else:
-#         ids = set()
-#
-#     filter_result_list = remove_elements(page_list, ids)
-#     if len(filter_result_list) > 0:
-#         write_json_objects_to_file(filter_result_list, output_file_path)
-#         # Create a Notion page for each weibo
-#         client = notion_client()
-#         for page in page_list:
-#             client.create_page(page)
-#     else:
-#         logger.info(f'{user_id} 没有数据可写入文件。')
-#         # print('没有数据可写入文件。')
-
 
 def get_message_ids(result_path):
     set_message_ids = set()
@@ -437,10 +410,6 @@ def main():
 2. 从数据库中获取已经存在的数据
 3. 比较新增的数据，有就保存Notion，无就跳过
 """
-global global_cookie
 if __name__ == '__main__':
-    global_cookie = 'SCF=AmdJA8eVf6WN0I0DpGYvCRJhTxQLYMoMaSoqxI5y_dhdYNYnsv521TbCSGVklmKQfBHpBzBDxo9WAqPUso_FtrA.; SUB=_2A25LAQg7DeRhGeRP7FUQ9ifKyjyIHXVofwXzrDV6PUJbktCOLXH1kW1NUBLdA4EpiFs7REXSLbH3KVC5E3THMYqW; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WF052.szp5Ep4SBfMjNg4y55JpX5KMhUgL.FozpS0MpSo.ceK52dJLoIpnLxKqL1KqL1hMLxKqLBo-LBKLSqPicIgRt; SSOLoginState=1711634539; ALF=1714226539; WEIBOCN_FROM=1110006030; _T_WM=47410922088; MLOGIN=1; XSRF-TOKEN=1d7c2f; M_WEIBOCN_PARAMS=oid%3D5017037674382501%26luicode%3D20000174%26lfid%3D5017037674382501%26uicode%3D20000174'
-    if len(global_cookie) < 10:
-        exit()
     main()
     print('[结束]')
