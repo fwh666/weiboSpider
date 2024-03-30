@@ -53,8 +53,11 @@ def data_parse(file_path, exist_ids):
             continue
         content = weibo['content']
         if u'全文' in content:
-            cookie = 'SCF=AmdJA8eVf6WN0I0DpGYvCRJhTxQLYMoMaSoqxI5y_dhdYNYnsv521TbCSGVklmKQfBHpBzBDxo9WAqPUso_FtrA.; SUB=_2A25LAQg7DeRhGeRP7FUQ9ifKyjyIHXVofwXzrDV6PUJbktCOLXH1kW1NUBLdA4EpiFs7REXSLbH3KVC5E3THMYqW; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WF052.szp5Ep4SBfMjNg4y55JpX5KMhUgL.FozpS0MpSo.ceK52dJLoIpnLxKqL1KqL1hMLxKqLBo-LBKLSqPicIgRt; SSOLoginState=1711634539; ALF=1714226539; WEIBOCN_FROM=1110006030; _T_WM=47410922088; MLOGIN=1; XSRF-TOKEN=1d7c2f; M_WEIBOCN_PARAMS=oid%3D5017037674382501%26luicode%3D20000174%26lfid%3D5017037674382501%26uicode%3D20000174'
+            cookie = global_cookie
             content = get_long_content(cookie, id, content)
+            if len(content) < 10:
+                content = weibo['content']
+
         article_url = weibo['article_url']
         original_pictures = weibo['original_pictures']
         original = weibo['original']
@@ -437,7 +440,10 @@ def main():
 """
 from notion_clean_weibo import main as clean_main
 
+global global_cookie
 if __name__ == '__main__':
-    # notion_main()
+    global_cookie = 'SCF=AmdJA8eVf6WN0I0DpGYvCRJhTxQLYMoMaSoqxI5y_dhdYNYnsv521TbCSGVklmKQfBHpBzBDxo9WAqPUso_FtrA.; SUB=_2A25LAQg7DeRhGeRP7FUQ9ifKyjyIHXVofwXzrDV6PUJbktCOLXH1kW1NUBLdA4EpiFs7REXSLbH3KVC5E3THMYqW; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WF052.szp5Ep4SBfMjNg4y55JpX5KMhUgL.FozpS0MpSo.ceK52dJLoIpnLxKqL1KqL1hMLxKqLBo-LBKLSqPicIgRt; SSOLoginState=1711634539; ALF=1714226539; WEIBOCN_FROM=1110006030; _T_WM=47410922088; MLOGIN=1; XSRF-TOKEN=1d7c2f; M_WEIBOCN_PARAMS=oid%3D5017037674382501%26luicode%3D20000174%26lfid%3D5017037674382501%26uicode%3D20000174'
+    if len(global_cookie) < 10:
+        exit()
     main()
     clean_main()
