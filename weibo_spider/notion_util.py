@@ -416,9 +416,9 @@ def main():
         for page in page_list:
             id = page.id
             if id not in exist_ids:
-                # if len(page.content) > 2000:
-                #     print(f'{id} too long')
-                #     continue
+                if len(page.content) > 2000:
+                    print(f'{id} too long')
+                    continue
                 new_page = client.create_page(page)
                 page_id = new_page['id']
                 print(f'保存消息ID为:{id}')
