@@ -53,8 +53,12 @@ def data_parse(file_path, exist_ids):
             continue
         content = weibo['content']
         if u'全文' in content:
-            cookie = 'SCF=AmdJA8eVf6WN0I0DpGYvCRJhTxQLYMoMaSoqxI5y_dhdYNYnsv521TbCSGVklmKQfBHpBzBDxo9WAqPUso_FtrA.; SUB=_2A25LAQg7DeRhGeRP7FUQ9ifKyjyIHXVofwXzrDV6PUJbktCOLXH1kW1NUBLdA4EpiFs7REXSLbH3KVC5E3THMYqW; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WF052.szp5Ep4SBfMjNg4y55JpX5KMhUgL.FozpS0MpSo.ceK52dJLoIpnLxKqL1KqL1hMLxKqLBo-LBKLSqPicIgRt; SSOLoginState=1711634539; ALF=1714226539; WEIBOCN_FROM=1110006030; _T_WM=47410922088; MLOGIN=1; XSRF-TOKEN=1d7c2f; M_WEIBOCN_PARAMS=oid%3D5017037674382501%26luicode%3D20000174%26lfid%3D5017037674382501%26uicode%3D20000174'
+            cookie = get_cookie()
+            # cookie = 'SCF=AmdJA8eVf6WN0I0DpGYvCRJhTxQLYMoMaSoqxI5y_dhdYNYnsv521TbCSGVklmKQfBHpBzBDxo9WAqPUso_FtrA.; SUB=_2A25LAQg7DeRhGeRP7FUQ9ifKyjyIHXVofwXzrDV6PUJbktCOLXH1kW1NUBLdA4EpiFs7REXSLbH3KVC5E3THMYqW; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WF052.szp5Ep4SBfMjNg4y55JpX5KMhUgL.FozpS0MpSo.ceK52dJLoIpnLxKqL1KqL1hMLxKqLBo-LBKLSqPicIgRt; ALF=1714226539; _T_WM=94535001455; WEIBOCN_FROM=1110106030; XSRF-TOKEN=d67f19; mweibo_short_token=b2ab5f29bd; MLOGIN=1; M_WEIBOCN_PARAMS=luicode%3D10000011%26lfid%3D231583%26fid%3D1005052217035934%26uicode%3D10000011'
             content = get_long_content(cookie, id, content)
+            if content is None:
+                logger.warning(f'{id} get long content failed')
+                continue
             if len(content) < 10:
                 content = weibo['content']
 
@@ -75,6 +79,8 @@ def data_parse(file_path, exist_ids):
         page_list.append(page)
     return page_list
 
+from bs4 import BeautifulSoup
+import re
 
 def get_long_content(cookie, weibo_id, content):
     try:
@@ -82,18 +88,39 @@ def get_long_content(cookie, weibo_id, content):
         user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36'
         headers = {'User_Agent': user_agent, 'Cookie': cookie}
         resp = requests.get(url, headers=headers)
-        selector = etree.HTML(resp.content)
-        if selector is not None:
-            info = selector.xpath("//div[@class='c']")[1]
-            wb_content = handle_garbled(info)
-            wb_time = info.xpath("//span[@class='ct']/text()")[0]
-            weibo_content = wb_content[wb_content.find(':') +
-                                       1:wb_content.rfind(wb_time)]
-            sleep(random.randint(6, 10))
-            if weibo_content is not None:
-                return weibo_content
-            else:
-                return content
+        if resp.status_code != 200:
+            url = f'https://m.weibo.cn/detail/{weibo_id}'
+            user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36'
+            headers = {'User_Agent': user_agent, 'Cookie': cookie}
+            resp = requests.get(url, headers=headers)
+            # soup = BeautifulSoup(resp.text, 'html.parser')
+            # script_tag = soup.body.find('script')
+            # script_content = script_tag.string
+            # mid_value = script_content.split('"mid": "')[1].split('"')[0]
+
+            script_content = re.search(r'<script>(.*?)</script>', resp.text, re.DOTALL).group(1)
+            mid_value = re.search(r'"mid": "(.*?)"', script_content).group(1)
+            # # root = etree.fromstring(resp.text)
+            # selector = etree.HTML(resp.text)
+            # # 使用XPath表达式来获取mid属性的值
+            # mid_value = selector.xpath('//mid/text()')[0]
+            print(mid_value)
+        else:
+            selector = etree.HTML(resp.content)
+            if selector is not None:
+                info = selector.xpath("//div[@class='c']")[1]
+                wb_content = handle_garbled(info)
+                if len(wb_content) == 0:
+                    info = selector.xpath("//div[@id='M_']")[0]
+                    wb_content = handle_garbled(info)
+                wb_time = info.xpath("//span[@class='ct']/text()")[0]
+                weibo_content = wb_content[wb_content.find(':') +
+                                           1:wb_content.rfind(wb_time)]
+                sleep(random.randint(6, 10))
+                if weibo_content is not None:
+                    return weibo_content
+                else:
+                    return content
     except Exception as e:
         print('获取正文异常', e)
         return content
@@ -327,7 +354,6 @@ def remove_elements(page_list, condition_id_set):
     return page_list
 
 
-
 def get_message_ids(result_path):
     set_message_ids = set()
     # 判断文件是否存在
@@ -403,6 +429,14 @@ def main():
                 f.write('\n')
             f.close()
             print(f'[notion.json保存:{len(insert_notion_list)}条数据完成]')
+
+
+def get_cookie():
+    parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    file_path = os.path.join(parent_dir, "config.json")
+    with open(file_path) as f:
+        config = json.loads(f.read())
+        return config['cookie']
 
 
 """
