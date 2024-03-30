@@ -73,7 +73,6 @@ def data_parse(file_path, exist_ids):
                     publish_place, publish_tool, up_num, retweet_num, comment_num, nickname, weibo_num, following,
                     followers)
         page_list.append(page)
-    print(page_list)
     return page_list
 
 
@@ -424,13 +423,13 @@ def main():
                 print(f'保存消息ID为:{id}')
                 insert_notion_data = {'id': id, 'page_id': page_id}
                 insert_notion_list.append(insert_notion_data)
-
-    with open(notion_file_path, 'a') as f:
-        for i in insert_notion_list:
-            json.dump(i, f)
-            f.write('\n')
-        f.close()
-        print(f'[notion.json保存:{len(insert_notion_list)}条数据完成]')
+    if len(insert_notion_list) > 0:
+        with open(notion_file_path, 'a') as f:
+            for i in insert_notion_list:
+                json.dump(i, f)
+                f.write('\n')
+            f.close()
+            print(f'[notion.json保存:{len(insert_notion_list)}条数据完成]')
 
 
 """
@@ -444,3 +443,4 @@ if __name__ == '__main__':
     if len(global_cookie) < 10:
         exit()
     main()
+    print('[结束]')
