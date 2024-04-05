@@ -402,9 +402,9 @@ def get_json_file(folder_path):
 def main():
     client = notion_client()
     insert_notion_list = []
-    notion_file_path = f'/Users/fwh/fuwenhao/Github/weiboSpider/weibo/weibo-notion.json'
+    notion_file_path = f'/home/fwh/github/weiboSpider/weibo/weibo-notion.json'
     exist_ids = get_message_ids(notion_file_path)
-    data_file_path = '/Users/fwh/fuwenhao/Github/weiboSpider/weibo/'
+    data_file_path = '/home/fwh/github/weiboSpider/weibo'
     # 加载所有json文件
     json_files = get_json_file(data_file_path)
     for json_file in json_files:
