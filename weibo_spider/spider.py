@@ -327,6 +327,11 @@ class Spider:
         try:
             self.get_user_info(user_config['user_uri'])
             logger.info(self.user)
+            if self.user is None:
+                print(f'Cookie过期,需要更新Cookie')
+                self.get_new_cookie()
+                self.get_one_user(user_config)#再查一次
+                # sys.exit()
             logger.info('*' * 100)
 
             self.initialize_info(user_config)
@@ -371,6 +376,46 @@ class Spider:
         except Exception as e:
             logger.exception(e)
 
+    def get_new_cookie(self):
+        '''
+        1. 打开9223(提前打开-登录微博)
+        2. 打开微博url
+        3. 获取Cookie
+        4. 写入文件-或者更新Cookie
+        '''
+        import subprocess
+        from selenium import webdriver
+        from selenium.webdriver.chrome.service import Service
+        try:
+            # command = f'cd /Users/fwh/fuwenhao/Temp/chromeDir && Google\ Chrome --remote-debugging-port=9223 --user-data-dir="./9223/ChromeProfile"'
+            # result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            # print(result.stdout)
+            # # 检查命令是否执行成功
+            # if result.returncode == 0:
+            #     # 输出命令执行结果
+            #     print(result.stdout)
+            # else:
+            #     # 输出错误信息
+            #     print(f"Error: {result.stderr}")
+            service = Service('/usr/local/bin/chromedriver')
+            options = webdriver.ChromeOptions()
+            port=9223
+            ip = f'127.0.0.1:{port}'
+            options.add_experimental_option("debuggerAddress", ip)
+            options.add_argument('--headless')
+            driver = webdriver.Chrome(service=service, options=options)
+            url = "https://weibo.com/"
+            driver.get(url)
+            all_cookies = driver.get_cookies()
+            cookie_string = "; ".join([f"{cookie['name']}={cookie['value']}" for cookie in all_cookies])
+            # 打印所有Cookie
+            # for cookie in all_cookies:
+            #     print(cookie)
+            self.cookie= cookie_string
+        except Exception as e:
+            logger.exception(e)
+                
+
 
 def _get_config():
     """获取config.json数据"""
@@ -406,6 +451,16 @@ def main(_):
     except Exception as e:
         logger.exception(e)
 
+import socket
+def is_port_in_use(port):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        if s.connect_ex(('127.0.0.1', port)) == 0:
+            print(f"Port {port} is in use.")
+            return True
+        else:
+            print(f"Port {port} is not in use.")
+            return False
 
 if __name__ == '__main__':
-    app.run(main)
+    if is_port_in_use(9223): #优先打开9223端口-登录微博             # command = f'cd /Users/fwh/fuwenhao/Temp/chromeDir && Google\ Chrome --remote-debugging-port=9223 --user-data-dir="./9223/ChromeProfile"'
+        app.run(main)
