@@ -330,7 +330,7 @@ class Spider:
             if self.user is None:
                 print(f'Cookie过期,需要更新Cookie')
                 self.get_new_cookie()
-                self.get_one_user(user_config)#再查一次
+                self.get_user_info(user_config['user_uri'])#再查一次
                 # sys.exit()
             logger.info('*' * 100)
 
@@ -361,6 +361,7 @@ class Spider:
                 logger.info(
                     u'没有配置有效的user_id，请通过config.json或user_id_list.txt配置user_id')
                 return
+            self.get_new_cookie() # 先获取Cookie再处理
             user_count = 0
             user_count1 = random.randint(*self.random_wait_pages)
             random_users = random.randint(*self.random_wait_pages)
@@ -404,7 +405,7 @@ class Spider:
             options.add_experimental_option("debuggerAddress", ip)
             options.add_argument('--headless')
             driver = webdriver.Chrome(service=service, options=options)
-            url = "https://weibo.com/"
+            url = "https://m.weibo.cn/u/2217035934?luicode=10000011&lfid=231583"
             driver.get(url)
             all_cookies = driver.get_cookies()
             cookie_string = "; ".join([f"{cookie['name']}={cookie['value']}" for cookie in all_cookies])
