@@ -231,9 +231,12 @@ class Spider:
         try:
             global global_file_path
             global global_user_id
-            dir_name = self.user.nickname
-            if self.result_dir_name:
-                dir_name = self.user.id
+            if self.user is None:
+                dir_name=self.user_config['user_uri']
+            else:
+                dir_name = self.user.nickname
+                if self.result_dir_name:
+                    dir_name = self.user.id
             if FLAGS.output_dir is not None:
                 file_dir = FLAGS.output_dir + os.sep + dir_name
             else:

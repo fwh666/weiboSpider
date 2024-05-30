@@ -32,7 +32,7 @@ class Page:
         self.followers = followers
 
 
-def data_parse(file_path, exist_ids):
+def data_parse(file_path, exist_ids,cookie):
     # Load the JSON file
     with open(file_path, 'r') as f:
         data = json.load(f)
@@ -53,7 +53,7 @@ def data_parse(file_path, exist_ids):
             continue
         content = weibo['content']
         if u'全文' in content:
-            cookie = 'SCF=AmdJA8eVf6WN0I0DpGYvCRJhTxQLYMoMaSoqxI5y_dhdYNYnsv521TbCSGVklmKQfBHpBzBDxo9WAqPUso_FtrA.; SUB=_2A25LAQg7DeRhGeRP7FUQ9ifKyjyIHXVofwXzrDV6PUJbktCOLXH1kW1NUBLdA4EpiFs7REXSLbH3KVC5E3THMYqW; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WF052.szp5Ep4SBfMjNg4y55JpX5KMhUgL.FozpS0MpSo.ceK52dJLoIpnLxKqL1KqL1hMLxKqLBo-LBKLSqPicIgRt; ALF=1714226539; _T_WM=94535001455; WEIBOCN_FROM=1110106030; MLOGIN=1; XSRF-TOKEN=688eac; mweibo_short_token=e831d00f2f; M_WEIBOCN_PARAMS=luicode%3D10000011%26lfid%3D231583%26fid%3D1005052217035934%26uicode%3D10000011'
+            # cookie = '_T_WM=29650549932; WEIBOCN_FROM=1110006030; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WF052.szp5Ep4SBfMjNg4y55JpX5K-hUgL.FozpS0MpSo.ceK52dJLoIpnLxKqL1KqL1hMLxKqLBo-LBKLSqPicIgRt; MLOGIN=1; SCF=AmdJA8eVf6WN0I0DpGYvCRJhTxQLYMoMaSoqxI5y_dhduGObFxkJbBtzAqeatlwDHJuWc1xibaSbNtvEH7b6e-o.; SUB=_2A25LXDQ5DeRhGeRP7FUQ9ifKyjyIHXVoEMnxrDV6PUJbktANLWujkW1NUBLdA0hywrqtOuDBOwLM6KUhUXiA2Wwl; SSOLoginState=1717060713; ALF=1719652713; XSRF-TOKEN=9e8d53; M_WEIBOCN_PARAMS=luicode%3D10000011%26lfid%3D231583%26fid%3D1076032217035934%26uicode%3D10000011'
             content = get_long_content(cookie, id, content)
             if len(content) < 10:
                 content = weibo['content']
@@ -82,21 +82,24 @@ def get_long_content(cookie, weibo_id, content):
         user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36'
         headers = {'User_Agent': user_agent, 'Cookie': cookie}
         resp = requests.get(url, headers=headers)
-        selector = etree.HTML(resp.content)
-        if selector is not None:
-            info = selector.xpath("//div[@class='c']")[1]
-            wb_content = handle_garbled(info)
-            if len(wb_content) == 0:
-                info = selector.xpath("//div[@id='M_']")[0]
+        if resp.status_code == 200:
+            selector = etree.HTML(resp.content)
+            if selector is not None:
+                info = selector.xpath("//div[@class='c']")[1]
                 wb_content = handle_garbled(info)
-            wb_time = info.xpath("//span[@class='ct']/text()")[0]
-            weibo_content = wb_content[wb_content.find(':') +
-                                       1:wb_content.rfind(wb_time)]
-            sleep(random.randint(6, 10))
-            if weibo_content is not None:
-                return weibo_content
-            else:
-                return content
+                if len(wb_content) == 0:
+                    info = selector.xpath("//div[@id='M_']")[0]
+                    wb_content = handle_garbled(info)
+                wb_time = info.xpath("//span[@class='ct']/text()")[0]
+                weibo_content = wb_content[wb_content.find(':') +
+                                        1:wb_content.rfind(wb_time)]
+                sleep(random.randint(6, 10))
+                if weibo_content is not None:
+                    return weibo_content
+                else:
+                    return content
+        else:
+            return ''
     except Exception as e:
         print('获取正文异常', e)
         return content
@@ -124,13 +127,11 @@ class notion_client:
         """
         初始化
         """
-        global global_query_results
         global global_notion
         global global_database_id
         global_token = "secret_SGSgYlUHk8knQRLcwJr1alzjzVTwXFwrr0UDBawy0Sw"
         global_database_id = "bc6dd8a4495f483989fac402ec1486fa"  # 微博-data
         global_notion = Client(auth=global_token)
-        global_query_results = global_notion.databases.query(database_id=global_database_id)
         print('初始化Notion...')
 
     """
@@ -365,6 +366,18 @@ def get_json_file(folder_path):
     #     print(json_file)
     return json_files
 
+def _get_config():
+    """获取config.json数据"""
+    config_path = os.getcwd() + os.sep + 'config.json'
+    try:
+        with open(config_path) as f:
+            config = json.loads(f.read())
+            return config
+    except ValueError:
+        logger.error(u'config.json 格式不正确，请访问 '
+                     u'https://github.com/dataabc/weiboSpider#2程序设置')
+        sys.exit()
+
 
 '''
 1. 获取已经保存notionID数据
@@ -375,6 +388,10 @@ def get_json_file(folder_path):
 
 
 def main():
+    config = _get_config()
+    cookie = config['cookie']
+
+
     client = notion_client()
     insert_notion_list = []
     notion_file_path = f'/Users/fwh/fuwenhao/Github/weiboSpider/weibo/weibo-notion.json'
@@ -386,7 +403,7 @@ def main():
         if json_file.endswith('weibo-notion.json'):
             continue
         print(f'[处理文件:{json_file}]')
-        page_list = data_parse(json_file, exist_ids)
+        page_list = data_parse(json_file, exist_ids,cookie)
         if len(page_list) == 0:
             print(f'[文件:{json_file}没有新增数据]')
             continue
